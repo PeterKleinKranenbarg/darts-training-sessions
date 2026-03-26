@@ -1,0 +1,40 @@
+{
+    "date": "26-03-2026", // The data of the training session
+    "time": "16:00:00", // The time of the training session
+    "training_types": [
+        {
+            "training_type": "50-out", // Start at 50, first dart at bullseye, finish from there in at most 9 darts
+            "darts_per_round": [5,0,3,7], // The number of darts required to go out, 0 means not out in 9 darts
+            "routes": [ // The exact routes with their counts, may be null if not tracked
+                ["S18", "0", "0", "S16", "D8"],
+                ["S18"] // etc
+            ]
+        },
+        {
+            "training_type": "double", // train on one specific double; throw 5x3 darts at that double
+            "double": "D16",
+            "total_scored": 4,
+            "darts": [ // The exact darts thrown, may be null if not tracked
+                "S16", "0", "0", "D16", "D16", "S7" // etc
+            ]
+        },
+        {
+            "training_type": "treble", // train on one specififc treble; throw 10x3 darts at that treble
+            "treble": "T20",
+            "total_treble": 3, // darts thrown in the treble 20
+            "total_single_or_double": 19, // darts thrown in the single or double 20
+            "darts": [ // The exact darts thrown, may be null if not tracked
+                "S20", "S1", "T20" // etc
+            ]
+        },
+        {
+            "training_type": "round_the_board", // start at 1, go op to bullseye. Double means skip one number, treble means skip two. Bullseye can't be skipped
+            "darts_up_to_bullseye": 40, // Darts required to get from 1 up to and including 20
+            "darts_on_bullseye": 10, // Darts required to get bullseye
+            "darts_single_bull": 3, // Number of darts that hit single bull when throwing at bullseye
+            "darts": [ // Exact darts thrown, may be null if not tracked
+                "S1", "T2", "S5", "S10", "S6" // etc. (may be up to and including 20 or complete)
+            ]
+        }
+    ]
+}
