@@ -148,15 +148,13 @@
     {
         "date": "2026-03-26",
         "training_type": "round-the-board",
-        "darts_thrown_at_number": null,
         "darts_up_to_bullseye": 47,
-        "darts_thrown_at_bullseye": 6,
-        "darts_thrown_in_single_bull": null
+        "darts_thrown_at_bullseye": 6
     },
     {
         "date": "2026-03-26",
         "training_type": "round-the-board",
-        "darts_thrown_at_number": [
+        "darts_thrown_per_number": [
             2,
             4,
             3,

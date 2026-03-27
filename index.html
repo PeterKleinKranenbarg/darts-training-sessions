@@ -89,7 +89,9 @@ svg {
     <button onclick="setMode('double')" id="doubleBtn">Double</button>
     <button onclick="setMode('triple')" id="tripleBtn">Triple</button>
     <button onclick="setMode('dartbot')" id="dartbotBtn">Dartbot</button>
+    <p id="modeDescription"></p>
 </div>
+
 
 <!-- MAIN LAYOUT -->
 <div id="layout">
@@ -100,13 +102,21 @@ svg {
 <!-- DARTBOT SECTION -->
 <div id="dartbotSection">
     <h2>Dartbot Stats</h2>
+    <p id="dartbotDescription"></p>
     <div id="dartbotStats"></div>
+</div>
 
+<!-- Round the board section-->
+<div id="roundTheBoardSection">
+    <h2>Round the Board Summary</h2>
+    <p id="roundTheBoardDescription"></p>
+    <div id="roundTheBoardStats"></div>
 </div>
 
 <!-- 50-OUT SECTION -->
 <div id="summary">
     <h2>50-Out Summary</h2>
+    <p id="fiftyOutDescription"></p>
     <div id="fiftyOutStats"></div>
 </div>
 <script>
@@ -181,6 +191,7 @@ function renderSummary(sessions) {
 
     const botStats = computeDartbotStats(normalizedSessions);
     const outStats = compute50OutStats(normalizedSessions);
+    const roundStats = computeRoundTheBoardStats(normalizedSessions);
 
     // ✅ Dartbot stats text
     let botHtml = "";
@@ -228,6 +239,30 @@ function renderSummary(sessions) {
     }
 
     document.getElementById("fiftyOutStats").innerHTML = outHtml;
+
+    let roundHtml = "";
+
+    if (roundStats.count > 0) {
+        roundHtml += `
+            <p><strong>Sessions:</strong> ${roundStats.count}</p>
+
+            <p><strong>Avg darts up to bullseye:</strong> ${roundStats.avgUpToBull.toFixed(2)}</p>
+            <p><strong>Min darts up to bullseye:</strong> ${roundStats.minUpToBull}</p>
+
+            <p><strong>Avg darts at bullseye:</strong> ${roundStats.avgBull.toFixed(2)}</p>
+            <p><strong>Min darts at bullseye:</strong> ${roundStats.minBull}</p>
+
+            <p><strong>Avg total darts:</strong> ${roundStats.avgTotal.toFixed(2)}</p>
+            <p><strong>Min total darts:</strong> ${roundStats.minTotal}</p>
+
+            <p><strong>Avg single bull %:</strong> ${roundStats.avgSingleBullPct !== null ? roundStats.avgSingleBullPct.toFixed(2) + "%" : "N/A"}</p>
+        `;
+    } else {
+        roundHtml = "<p>No round-the-board data</p>";
+    }
+
+    document.getElementById("roundTheBoardStats").innerHTML = roundHtml;
+    updateSectionDescriptions();
 }
 
 const numbers = [20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
@@ -336,7 +371,19 @@ function normalizeSession(s) {
                 thrown_per_double: s.thrown_per_double || {} // <-- IMPORTANT
             };
     }
-    console.log("Type:", type)
+
+    if (type === "round-the-board") {
+        return {
+            type: "round-the-board",
+
+            dartsUpToBull: s.darts_up_to_bullseye ?? null,
+            dartsAtBull: s.darts_thrown_at_bullseye ?? 0,
+            dartsInSingleBull: s.darts_thrown_in_single_bull ?? null,
+
+            // optional: raw arrays if you ever store them
+            dartsPerNumber: s.darts_thrown_per_number || []
+        };
+    }
 
     return null;
 }
@@ -473,6 +520,65 @@ function computeDartbotStats(sessions) {
     };
 }
 
+function computeRoundTheBoardStats(sessions) {
+    const rounds = sessions.filter(s => s.type === "round-the-board");
+
+    if (rounds.length === 0) {
+        return { count: 0 };
+    }
+
+    let upToBullList = [];
+    let bullList = [];
+    let totalList = [];
+    let singleBullPercentages = [];
+
+    rounds.forEach(s => {
+        let upToBull;
+        upToBull = s.dartsUpToBull;
+        const bull = s.dartsAtBull;
+
+        if (upToBull != null) {
+            upToBullList.push(upToBull);
+        } else {
+            const dartsPerNumber = s.dartsPerNumber;
+            if (dartsPerNumber != null) {
+                upToBull = dartsPerNumber.reduce((acc, val) => acc + val, 0);
+                upToBullList.push(upToBull)
+            }
+        }
+        console.log("Up to bull", upToBullList)
+
+        bullList.push(bull);
+
+        const total = (upToBull || 0) + bull;
+        totalList.push(total);
+
+        if (s.dartsInSingleBull != null && bull > 0) {
+            singleBullPercentages.push((s.dartsInSingleBull / bull) * 100);
+        }
+    });
+
+    const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+    const min = arr => arr.length ? Math.min(...arr) : null;
+
+    return {
+        count: rounds.length,
+
+        avgUpToBull: avg(upToBullList),
+        minUpToBull: min(upToBullList),
+
+        avgBull: avg(bullList),
+        minBull: min(bullList),
+
+        avgTotal: avg(totalList),
+        minTotal: min(totalList),
+
+        avgSingleBullPct: singleBullPercentages.length
+            ? avg(singleBullPercentages)
+            : null
+    };
+}
+
 function computeStats(sessions) {
 
     // existing logic for board modes
@@ -480,7 +586,7 @@ function computeStats(sessions) {
 
     sessions.map(normalizeSession).forEach(s => {
         if (!s) return;
-        if (s.type === "dartbot" || s.type === "50-out") return;
+        if (s.type === "dartbot" || s.type === "50-out" || s.type === "round-the-board") return;
 
         const num = s.number;
 
@@ -797,6 +903,7 @@ function setMode(newMode) {
     document.querySelectorAll("button").forEach(b => b.classList.remove("active"));
     document.getElementById(newMode + "Btn").classList.add("active");
 
+    updateDescriptions();
     applyFilter(); // 🔥 recompute with correct dataset
 }
 
@@ -807,6 +914,41 @@ function setDefaultDates() {
     if (!fromInput.value) fromInput.value = "2026-01-01";
     if (!toInput.value) toInput.value = new Date().toISOString().split("T")[0];
 }
+
+function updateDescriptions() {
+    const modeDescriptions = {
+        single: "Throw x darts at a single and track the hits and misses.",
+        double: "Throw x darts at a double and track the hits and misses.",
+        triple: "Throw x darts at a treble and track the hits and misses. The average score is also showed.",
+        dartbot: "Analysis of doubles thrown and hit against the dartbot."
+    };
+
+    const el = document.getElementById("modeDescription");
+    if (el) {
+        el.textContent = modeDescriptions[mode] || "";
+    }
+}
+
+function updateSectionDescriptions() {
+    const roundDartbot = document.getElementById("dartbotDescription");
+    if (roundDartbot) {
+        roundDartbot.textContent =
+            "Dartbot Stats contains data gathered from games against the dartbot.";
+    }
+
+    const roundDesc = document.getElementById("roundTheBoardDescription");
+    if (roundDesc) {
+        roundDesc.textContent =
+            "Move from 1, counting up to 20 and finally bullseye. Double means skipping one, treble skipping two numbers.";
+    }
+
+    const fiftyDesc = document.getElementById("fiftyOutDescription");
+    if (fiftyDesc) {
+        fiftyDesc.textContent =
+            "Start with a dart at the bullseye. Finish from there in at most 9 darts total.";
+    }
+}
+
 
 window.addEventListener("DOMContentLoaded", () => {
     setDefaultDates();
