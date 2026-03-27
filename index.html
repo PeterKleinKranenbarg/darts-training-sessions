@@ -171,16 +171,12 @@ function applyFilter() {
         return false;
     });
 
-    console.log("Filtered sessions:", filtered);
-    console.log("Board sessions:", boardFiltered);
-
     data = computeStats(boardFiltered);
     // attach dartbot stats globally
     const normalized = filtered.map(normalizeSession);
     const botStats = computeDartbotStats(normalized);
 
     data.dartbot = botStats?.doubleResults || {};
-    console.log("Double results:", data.dartbot);
 
     drawBoard();
     renderSummary(filtered);
@@ -269,12 +265,49 @@ const numbers = [20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
 
 const boardOrder = [20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
 
+function getNextNumber(num) {
+    const i = boardOrder.indexOf(num);
+    return boardOrder[(i + 1) % boardOrder.length];
+}
+
+function getPreviousNumber(num) {
+    const i = boardOrder.indexOf(num);
+    return boardOrder[(i - 1 + boardOrder.length) % boardOrder.length];
+}
+
 function getNeighbors(num) {
     const i = boardOrder.indexOf(num);
     return {
         next: boardOrder[(i + 1) % 20],
         prev: boardOrder[(i - 1 + 20) % 20]
     };
+}
+
+function computeTripleSessionScore(s) {
+    const num = s.number;
+
+    const nextNum = getNextNumber(num);
+    const prevNum = getPreviousNumber(num);
+
+    let score = 0;
+
+    // Main target hits
+    score += (s.hits.triple || 0) * (3 * num);
+    score += (s.hits.double || 0) * (2 * num);
+    score += (s.hits.single || 0) * (1 * num);
+
+    // Neighbor triples
+    score += (s.scores.next_triple || 0) * (3 * nextNum);
+    score += (s.scores.prev_triple || 0) * (3 * prevNum);
+
+    // Neighbor singles
+    score += (s.scores.next_single || 0) * (1 * nextNum);
+    score += (s.scores.prev_single || 0) * (1 * prevNum);
+
+    // Other + misc
+    score += s.scores.other_total_score || 0;
+
+    return score;
 }
 
 function normalizeSession(s) {
@@ -300,7 +333,14 @@ function normalizeSession(s) {
                 (s.previous_triple || 0) +
                 (s.next_single || 0) +
                 (s.previous_single || 0) +
-                (s.other || 0)
+                (s.other || 0),
+            scores: {
+                next_single: s.next_single,
+                next_triple: s.next_triple,
+                prev_single: s.previous_single,
+                prev_triple: s.previous_triple,
+                other_total_score: s.sum_other
+            }
         };
     }
 
@@ -421,7 +461,6 @@ function compute50OutStats(sessions) {
 }
 function computeDartbotStats(sessions) {
     const bots = sessions.filter(s => s.type === "dartbot");
-    console.log("Bots:", bots)
 
     if (bots.length === 0) return null;
 
@@ -490,7 +529,6 @@ function computeDartbotStats(sessions) {
 
     // ✅ calculate hit percentages
     const doubleResults = {};
-    console.log("Double stats:", doubleStats)
 
     Object.keys(doubleStats).forEach(d => {
         const entry = doubleStats[d];
@@ -506,7 +544,6 @@ function computeDartbotStats(sessions) {
         };
     });
 
-    console.log("Double results:", doubleResults)
     return {
         averageAverage: avgSum / bots.length,
         averageFirst9: first9Sum / bots.length,
@@ -546,7 +583,6 @@ function computeRoundTheBoardStats(sessions) {
                 upToBullList.push(upToBull)
             }
         }
-        console.log("Up to bull", upToBullList)
 
         bullList.push(bull);
 
@@ -594,6 +630,7 @@ function computeStats(sessions) {
             result[num] = {
                 attempts: 0,
                 darts: 0,
+                totalScore: 0,
                 singleHits: 0,
                 doubleHits: 0,
                 tripleHits: 0,
@@ -617,6 +654,10 @@ function computeStats(sessions) {
         r.prevHits += hits.prev || 0;
         r.outsideHits += hits.outside || 0;
         r.otherHits += hits.other || 0;
+
+        if (s.type === "triple") {
+            r.totalScore += computeTripleSessionScore(s);
+        }
     });
 
     Object.keys(result).forEach(num => {
@@ -630,6 +671,7 @@ function computeStats(sessions) {
         r["Previous hit %"] = (r.prevHits / total) * 100;
         r["Outside hit %"] = (r.outsideHits / total) * 100;
         r["Other %"] = (r.otherHits / total) * 100;
+        r["Average score"] = ((r.totalScore / total) * 3);
     });
 
     return result;
@@ -761,7 +803,6 @@ function drawBoard() {
         let color;
 
         if (mode === "dartbot") {
-            console.log("Dartbot data for", num, data.dartbot?.[num]);
             const result = data.dartbot?.[String(num)];
             color = getDartbotColor(result);
         } else {
@@ -875,6 +916,7 @@ function showDetails(num) {
             <p>Number hit: ${((d.tripleHits + d.doubleHits + d.singleHits) / d.attempts * 100).toFixed(2)}%</p>
             <p>Next: ${d["Next hit %"].toFixed(2)}%</p>
             <p>Previous: ${d["Previous hit %"].toFixed(2)}%</p>
+            <p>Average score: ${d["Average score"].toFixed(2)}</p>
         `;
     }
 
