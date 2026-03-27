@@ -1,0 +1,58 @@
+[
+    {
+        "date": "2026-03-26",
+        "training_type": "double_training",
+        "double": 10,
+        "double_hits": 0,
+        "single_hits": 0,
+        "outside_hits": 0,
+        "next_double": 0,
+        "previous_double": 0,
+        "next_single": 0,
+        "previous_single": 0,
+        "other": 0
+    },
+    {
+        "date": "2026-03-26",
+        "training_type": "triple_training",
+        "triple": 20,
+        "triple_hits": 0,
+        "double_hits": 0,
+        "single_hits": 0,
+        "next_triple": 0,
+        "previous_triple": 0,
+        "next_single": 0,
+        "previous_single": 0,
+        "other": 0,
+        "sum_other": 0
+    },
+    {
+        "date": "2026-03-26",
+        "training_type": "50-out",
+        "darts_used": [],
+        "doubles": null,
+        "routes": null
+    },
+    {
+        "date": "2026-03-27",
+        "training_type": "dartbot",
+        "dartbot_level": 4,
+        "won_legs_number_of_darts": [],
+        "lost_legs": 0,
+        "3_dart_average": 0,
+        "first_9_average": 0,
+        "highest_score": 0,
+        "finishes": [],
+        "doubles": [],
+        "thrown_per_double": null
+    },
+    {
+        "date": "2026-03-26",
+        "training_type": "round-the-board",
+        "darts_thrown_at_number": [ // 0 indicates the number is skipped (due to double/triple thrown)
+            // array of 20 numbers
+        ],
+        "darts_thrown_at_bullseye": 6,
+        "darts_thrown_in_single_bull": 1 // the number of darts of the darts thrown at bullseye that are in single bull
+    }
+]

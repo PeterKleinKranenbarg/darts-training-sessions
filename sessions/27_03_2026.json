@@ -1,34 +1,231 @@
 [
-  {
-    "date": "2026-03-26",
-    "training_type": "single_training",
-    "single": 1,
-    "single_hits": 6,
-    "double_hits": 1,
-    "triple_hits": 1,
-    "outside_hits": 6,
-    "next_single": 0,
-    "previous_single": 2,
-    "other": 0
-  },
-  {
-    "date": "2026-03-26",
-    "training_type": "dartbot",
-    "dartbot_level": 4,
-    "won_legs_number_of_darts": [26],
-    "lost_legs": 2,
-    "3_dart_average": 33.31,
-    "first_9_average": 39.22,
-    "highest_score": 65,
-    "finishes": [17],
-    "doubles": [8],
-    "thrown_per_double": {
-      "4": 3,
-      "9": 2,
-      "8": 1,
-      "17": 3,
-      "20": 6,
-      "25": 1 
+    {
+        "date": "2026-03-27",
+        "training_type": "50-out",
+        "darts_used": [
+            3,
+            4,
+            5,
+            6,
+            6,
+            6,
+            6,
+            6,
+            6,
+            9,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ],
+        "doubles": {
+            "2": 3,
+            "3": 1,
+            "4": 4,
+            "6": 1,
+            "18": 1
+        },
+        "routes": [
+            "4-14-16-11-1-d2",
+            "12-19-7-6-d3",
+            "17-1-16-8-d4",
+            "20-15-7-4-d2",
+            "8-6-d18",
+            "25-14-3-d4",
+            "5-18-11-8-4-d2",
+            "13-5-16-8-d4",
+            "4-14-8-12-d6",
+            "13-5-16-8-d4"
+        ]
+    },
+    {
+        "date": "2026-03-27",
+        "training_type": "dartbot",
+        "dartbot_level": 4,
+        "won_legs_number_of_darts": [
+            26
+        ],
+        "lost_legs": 2,
+        "3_dart_average": 33.31,
+        "first_9_average": 39.22,
+        "highest_score": 65,
+        "finishes": [
+            17
+        ],
+        "doubles": [
+            8
+        ],
+        "thrown_per_double": {
+            "4": 3,
+            "9": 2,
+            "8": 1,
+            "17": 3,
+            "20": 6,
+            "25": 1
+        }
+    },
+    {
+        "date": "2026-03-27",
+        "training_type": "dartbot",
+        "dartbot_level": 4,
+        "won_legs_number_of_darts": [
+            22,
+            23
+        ],
+        "lost_legs": 1,
+        "3_dart_average": 36.79,
+        "first_9_average": 48.89,
+        "highest_score": 85,
+        "finishes": [
+            2,
+            32
+        ],
+        "doubles": [
+            1,
+            8
+        ],
+        "thrown_per_double": {
+            "1": 2,
+            "2": 3,
+            "4": 5,
+            "8": 1,
+            "16": 1
+        }
+    },
+    {
+        "date": "2026-03-27",
+        "training_type": "dartbot",
+        "dartbot_level": 4,
+        "won_legs_number_of_darts": [],
+        "lost_legs": 2,
+        "3_dart_average": 39.2,
+        "first_9_average": 54.5,
+        "highest_score": 132,
+        "finishes": [],
+        "doubles": [],
+        "thrown_per_double": {
+            "4": 2,
+            "10": 4,
+            "16": 1,
+            "20": 1
+        }
+    },
+    {
+        "date": "2026-03-27",
+        "training_type": "dartbot",
+        "dartbot_level": 4,
+        "won_legs_number_of_darts": [
+            24
+        ],
+        "lost_legs": 2,
+        "3_dart_average": 33.96,
+        "first_9_average": 53.33,
+        "highest_score": 100,
+        "finishes": [
+            16
+        ],
+        "doubles": [
+            4
+        ],
+        "thrown_per_double": {
+            "2": 1,
+            "4": 3,
+            "7": 2,
+            "8": 5,
+            "10": 3,
+            "15": 4,
+            "16": 1,
+            "20": 7
+        }
+    },
+    {
+        "date": "2026-03-27",
+        "training_type": "triple_training",
+        "triple": 20,
+        "triple_hits": 2,
+        "double_hits": 0,
+        "single_hits": 15,
+        "next_triple": 1,
+        "previous_triple": 0,
+        "next_single": 7,
+        "previous_single": 4,
+        "other": 1,
+        "sum_other": 18
+    },
+    {
+        "date": "2026-03-27",
+        "training_type": "triple_training",
+        "triple": 19,
+        "triple_hits": 2,
+        "double_hits": 0,
+        "single_hits": 14,
+        "next_triple": 1,
+        "previous_triple": 1,
+        "next_single": 5,
+        "previous_single": 4,
+        "other": 3,
+        "sum_other": 51
+    },
+    {
+        "date": "2026-03-27",
+        "training_type": "triple_training",
+        "triple": 18,
+        "triple_hits": 3,
+        "double_hits": 1,
+        "single_hits": 12,
+        "next_triple": 1,
+        "previous_triple": 0,
+        "next_single": 5,
+        "previous_single": 4,
+        "other": 3,
+        "sum_other": 8
+    },
+    {
+        "date": "2026-03-27",
+        "training_type": "triple_training",
+        "triple": 17,
+        "triple_hits": 5,
+        "double_hits": 0,
+        "single_hits": 10,
+        "next_triple": 2,
+        "previous_triple": 1,
+        "next_single": 3,
+        "previous_single": 6,
+        "other": 3,
+        "sum_other": 22
+    },
+    {
+        "date": "2026-03-27",
+        "training_type": "round-the-board",
+        "darts_thrown_at_number": [
+            2,
+            2,
+            1,
+            1,
+            5,
+            1,
+            0,
+            1,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            3,
+            2,
+            1,
+            0
+        ],
+        "darts_thrown_at_bullseye": 6,
+        "darts_thrown_in_single_bull": 1
     }
-  }
 ]

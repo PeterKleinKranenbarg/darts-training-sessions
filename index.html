@@ -616,15 +616,29 @@ function getMaxValue() {
 
     return max || 1; // avoid division by 0
 }
+function getDartbotMax() {
+    let max = 0;
+
+    Object.values(data.dartbot || {}).forEach(r => {
+        if (r && r.thrown > 0) {
+            if (r.hitPct > max) max = r.hitPct;
+        }
+    });
+
+    return max || 1;
+}
 
 function getDartbotColor(result) {
     if (!result || result.thrown === 0) return "#555";
 
-    const pct = result.hitPct;
+    const max = getDartbotMax();
+    const ratio = result.hitPct / max;
 
-    if (pct >= 60) return "#4caf50";
-    if (pct >= 30) return "#ff9800";
-    return "#f44336";
+    // same gradient logic as other modes
+    const green = Math.floor(255 * ratio);
+    const red = Math.floor(255 * (1 - ratio));
+
+    return `rgb(${red},${green},0)`;
 }
 
 function drawBoard() {
