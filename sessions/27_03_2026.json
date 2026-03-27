@@ -1,0 +1,34 @@
+[
+  {
+    "date": "2026-03-26",
+    "training_type": "single_training",
+    "single": 1,
+    "single_hits": 6,
+    "double_hits": 1,
+    "triple_hits": 1,
+    "outside_hits": 6,
+    "next_single": 0,
+    "previous_single": 2,
+    "other": 0
+  },
+  {
+    "date": "2026-03-26",
+    "training_type": "dartbot",
+    "dartbot_level": 4,
+    "won_legs_number_of_darts": [26],
+    "lost_legs": 2,
+    "3_dart_average": 33.31,
+    "first_9_average": 39.22,
+    "highest_score": 65,
+    "finishes": [17],
+    "doubles": [8],
+    "thrown_per_double": {
+      "4": 3,
+      "9": 2,
+      "8": 1,
+      "17": 3,
+      "20": 6,
+      "25": 1 
+    }
+  }
+]

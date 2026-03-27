@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Darts Dashboard</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #1e1e1e;
+    color: white;
+}
+
+#controls {
+    margin: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button.active {
+    background: orange;
+}
+
+svg {
+    background: #222;
+    border-radius: 50%;
+}
+
+#details {
+    margin-top: 20px;
+    background: #333;
+    padding: 15px;
+    border-radius: 10px;
+    display: inline-block;
+    text-align: left;
+}
+#layout {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+#summary {
+    margin-top: 30px;
+    background: #333;
+    padding: 20px;
+    border-radius: 10px;
+    display: inline-block;
+    text-align: left;
+}
+
+#dateControls {
+    margin-bottom: 10px;
+}
+#dartbotContainer {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+#dartboard {
+    width: 300px;
+    height: 300px;
+}
+
+</style>
+</head>
+<body>
+<h1>Darts Accuracy Dashboard</h1>
+
+<!-- DATE FILTER (always visible) -->
+<div id="dateControls">
+    <input type="date" id="fromDate">
+    <input type="date" id="toDate">
+    <button onclick="applyFilter()">Apply</button>
+</div>
+
+<!-- MODE TOGGLE -->
+<div id="controls">
+    <button onclick="setMode('single')" id="singleBtn">Single</button>
+    <button onclick="setMode('double')" id="doubleBtn">Double</button>
+    <button onclick="setMode('triple')" id="tripleBtn">Triple</button>
+    <button onclick="setMode('dartbot')" id="dartbotBtn">Dartbot</button>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div id="layout">
+    <svg id="board" width="500" height="500" viewBox="-250 -250 500 500"></svg>
+    <div id="details">Click a segment to see details</div>
+</div>
+
+<!-- DARTBOT SECTION -->
+<div id="dartbotSection">
+    <h2>Dartbot Stats</h2>
+    <div id="dartbotStats"></div>
+
+</div>
+
+<!-- 50-OUT SECTION -->
+<div id="summary">
+    <h2>50-Out Summary</h2>
+    <div id="fiftyOutStats"></div>
+</div>
+<script>
+
+let data = {};
+
+let rawSessions = [];
+
+async function loadSessions() {
+    const index = await fetch("sessions/index.json").then(r => r.json());
+
+    const promises = index.map(async file => {
+        const json = await fetch("sessions/" + file).then(r => r.json());
+
+        // If file contains multiple sessions
+        if (Array.isArray(json)) {
+            return json;
+        }
+
+        // If still single object (backward compatibility)
+        return [json];
+    });
+
+    const nested = await Promise.all(promises);
+
+    // Flatten into one array
+    rawSessions = nested.flat();
+
+    applyFilter(); // 🔥 important
+}
+function applyFilter() {
+    const fromInput = document.getElementById("fromDate");
+    const toInput = document.getElementById("toDate");
+
+    if (!fromInput.value) fromInput.value = "2026-01-01";
+    if (!toInput.value) toInput.value = new Date().toISOString().split("T")[0];
+
+    const from = new Date(fromInput.value);
+    const to = new Date(toInput.value);
+
+    const filtered = rawSessions.filter(s => {
+        const d = new Date(s.date);
+        return d >= from && d <= to;
+    });
+
+    // filter for dartboard ONLY
+    const boardFiltered = filtered.filter(s => {
+        if (mode === "single") return s.training_type === "single_training";
+        if (mode === "double") return s.training_type === "double_training";
+        if (mode === "triple") return s.training_type === "triple_training";
+        if (mode === "dartbot") return s.training_type === "dartbot";
+        return false;
+    });
+
+    console.log("Filtered sessions:", filtered);
+    console.log("Board sessions:", boardFiltered);
+
+    data = computeStats(boardFiltered);
+    // attach dartbot stats globally
+    const normalized = filtered.map(normalizeSession);
+    const botStats = computeDartbotStats(normalized);
+
+    data.dartbot = botStats?.doubleResults || {};
+    console.log("Double results:", data.dartbot);
+
+    drawBoard();
+    renderSummary(filtered);
+}
+
+function renderSummary(sessions) {
+    const normalizedSessions = sessions.map(normalizeSession);
+
+    const botStats = computeDartbotStats(normalizedSessions);
+    const outStats = compute50OutStats(normalizedSessions);
+
+    // ✅ Dartbot stats text
+    let botHtml = "";
+
+    if (botStats) {
+        botHtml += `
+            <p><strong>Average 3-dart average:</strong> ${botStats.averageAverage.toFixed(2)}</p>
+            <p><strong>Average first 9 average:</strong> ${botStats.averageFirst9.toFixed(2)}</p>
+            <p><strong>Highest 3-dart average:</strong> ${botStats.highestAverage.toFixed(2)}</p>
+            <p><strong>Highest first 9 average:</strong> ${botStats.highestFirst9.toFixed(2)}</p>
+            <p><strong>Highest score:</strong> ${botStats.highestScore}</p>
+            <p><strong>Highest finish:</strong> ${botStats.highestFinish}</p>
+            <p><strong>Average darts per won leg:</strong> ${botStats.avgDartsPerLeg?.toFixed(2)}</p>
+            <p><strong>Fastest leg:</strong> ${botStats.minDartsPerLeg} darts</p>
+        `;
+    } else {
+        botHtml = "<p>No dartbot data</p>";
+    }
+
+    document.getElementById("dartbotStats").innerHTML = botHtml;
+
+
+    // ✅ 50-out stats
+    let outHtml = "";
+
+    if (outStats && Object.keys(outStats.counts).length > 0) {
+        Object.keys(outStats.counts)
+            .sort((a, b) => {
+                if (a === "not_finished") return 1;
+                if (b === "not_finished") return -1;
+                return a - b;
+            })
+            .forEach(k => {
+                const count = outStats.counts[k];
+                const pct = outStats.percentages[k];
+
+                if (k === "not_finished") {
+                    outHtml += `<p><strong>Not finished:</strong> ${count} (${pct.toFixed(1)}%)</p>`;
+                } else {
+                    outHtml += `<p><strong>${k} darts:</strong> ${count} (${pct.toFixed(1)}%)</p>`;
+                }
+            });
+    } else {
+        outHtml = "<p>No 50-out data</p>";
+    }
+
+    document.getElementById("fiftyOutStats").innerHTML = outHtml;
+}
+
+const numbers = [20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
+
+const boardOrder = [20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
+
+function getNeighbors(num) {
+    const i = boardOrder.indexOf(num);
+    return {
+        next: boardOrder[(i + 1) % 20],
+        prev: boardOrder[(i - 1 + 20) % 20]
+    };
+}
+
+function normalizeSession(s) {
+    const type = s.training_type;
+
+    if (type === "triple_training") {
+        return {
+            number: s.triple,
+            type: "triple",
+            hits: {
+                single: s.single_hits || 0,
+                double: s.double_hits || 0,
+                triple: s.triple_hits || 0,
+                next: s.next_single + s.next_triple,
+                prev: s.previous_single + s.previous_triple,
+                other: s.other || 0
+            },
+            darts:
+                (s.triple_hits || 0) +
+                (s.double_hits || 0) +
+                (s.single_hits || 0) +
+                (s.next_triple || 0) +
+                (s.previous_triple || 0) +
+                (s.next_single || 0) +
+                (s.previous_single || 0) +
+                (s.other || 0)
+        };
+    }
+
+    if (type === "double_training") {
+        return {
+            number: s.double,
+            type: "double",
+            hits: {
+                single: s.single_hits || 0,
+                double: s.double_hits || 0,
+                triple: 0,
+                next: s.next_double || 0,
+                prev: s.previous_double || 0,
+                outside: s.outside_hits || 0,
+                other: s.other || 0
+            },
+            darts:
+                (s.double_hits || 0) +
+                (s.single_hits || 0) +
+                (s.outside_hits || 0) +
+                (s.next_double || 0) +
+                (s.previous_double || 0) +
+                (s.other || 0)
+        };
+    }
+
+    if (type === "single_training") {
+        return {
+            number: s.single,
+            type: "single",
+            hits: {
+                single: s.single_hits || 0,
+                double: s.double_hits || 0,
+                triple: s.triple_hits || 0,
+                next: s.next_single || 0,
+                prev: s.previous_single || 0,
+                outside: s.outside_hits || 0,
+                other: s.other || 0
+            },
+            darts:
+                (s.single_hits || 0) +
+                (s.double_hits || 0) +
+                (s.triple_hits || 0) +
+                (s.outside_hits || 0) +
+                (s.next_single || 0) +
+                (s.previous_single || 0) +
+                (s.other || 0)
+        };
+    }
+
+    if (type === "50-out") {
+        return {
+            type: "50-out",
+            dartsUsed: s.darts_used || []
+        };
+    }
+
+    if (type === "dartbot") {
+        return {
+                type: "dartbot",
+                wonDarts: s.won_legs_number_of_darts || [],
+                lostLegs: s.lost_legs || 0,
+                avg: s["3_dart_average"] || null,
+                first9: s["first_9_average"] || null,
+                highestScore: s.highest_score || null,
+                finishes: s.finishes || [],
+                doubles: s.doubles || [], // <-- IMPORTANT
+                thrown_per_double: s.thrown_per_double || {} // <-- IMPORTANT
+            };
+    }
+    console.log("Type:", type)
+
+    return null;
+}
+
+function compute50OutStats(sessions) {
+    const counts = {};
+    const percentages = {};
+    let total_count = 0;
+
+    sessions.forEach(s => {
+        if (s.type !== "50-out") return;
+
+        (s.dartsUsed || []).forEach(d => {
+            if (d === 0) {
+                counts["not_finished"] = (counts["not_finished"] || 0) + 1;
+            } else {
+                counts[d] = (counts[d] || 0) + 1;
+            }
+            total_count += 1;
+        });
+    });
+
+    // ✅ calculate percentages
+    Object.keys(counts).forEach(k => {
+        percentages[k] = total_count > 0
+            ? (counts[k] / total_count) * 100
+            : 0;
+    });
+
+    return {
+        counts,
+        percentages,
+        total: total_count
+    };
+}
+function computeDartbotStats(sessions) {
+    const bots = sessions.filter(s => s.type === "dartbot");
+    console.log("Bots:", bots)
+
+    if (bots.length === 0) return null;
+
+    let avgSum = 0;
+    let first9Sum = 0;
+
+    let highestAvg = 0;
+    let highestFirst9 = 0;
+    let highestScore = 0;
+    let highestFinish = 0;
+
+    let dartsWon = [];
+
+    const doubleStats = {};
+
+    bots.forEach(s => {
+        if (s.avg) {
+            avgSum += s.avg;
+            highestAvg = Math.max(highestAvg, s.avg);
+        }
+
+        if (s.first9) {
+            first9Sum += s.first9;
+            highestFirst9 = Math.max(highestFirst9, s.first9);
+        }
+
+        if (s.highestScore) {
+            highestScore = Math.max(highestScore, s.highestScore);
+        }
+
+        if (s.finishes && s.finishes.length > 0) {
+            highestFinish = Math.max(highestFinish, ...s.finishes);
+        }
+
+        (s.wonDarts || []).forEach(d => dartsWon.push(d));
+
+        // --- doubles aggregation ---
+        const hitCounts = {};
+
+        (s.doubles || []).forEach(d => {
+            hitCounts[d] = (hitCounts[d] || 0) + 1;
+        });
+
+        if (s.thrown_per_double) {
+            Object.keys(s.thrown_per_double).forEach(d => {
+                const thrown = s.thrown_per_double[d] || 0;
+                const hits = hitCounts[d] || 0;
+
+                if (!doubleStats[d]) {
+                    doubleStats[d] = { thrown: 0, hits: 0 };
+                }
+
+                doubleStats[d].thrown += thrown;
+                doubleStats[d].hits += hits;
+            });
+        }
+    });
+
+    const avgDartsPerLeg = dartsWon.length
+        ? dartsWon.reduce((a, b) => a + b, 0) / dartsWon.length
+        : null;
+
+    const minDartsPerLeg = dartsWon.length
+        ? Math.min(...dartsWon)
+        : null;
+
+    // ✅ calculate hit percentages
+    const doubleResults = {};
+    console.log("Double stats:", doubleStats)
+
+    Object.keys(doubleStats).forEach(d => {
+        const entry = doubleStats[d];
+
+        const hitPct = entry.thrown > 0
+            ? (entry.hits / entry.thrown) * 100
+            : 0;
+
+        doubleResults[d] = {
+            thrown: entry.thrown,
+            hits: entry.hits,
+            hitPct
+        };
+    });
+
+    console.log("Double results:", doubleResults)
+    return {
+        averageAverage: avgSum / bots.length,
+        averageFirst9: first9Sum / bots.length,
+        highestAverage: highestAvg,
+        highestFirst9: highestFirst9,
+        highestScore,
+        highestFinish,
+        avgDartsPerLeg,
+        minDartsPerLeg,
+        doubleResults // ✅ now included
+    };
+}
+
+function computeStats(sessions) {
+
+    // existing logic for board modes
+    const result = {};
+
+    sessions.map(normalizeSession).forEach(s => {
+        if (!s) return;
+        if (s.type === "dartbot" || s.type === "50-out") return;
+
+        const num = s.number;
+
+        if (!result[num]) {
+            result[num] = {
+                attempts: 0,
+                darts: 0,
+                singleHits: 0,
+                doubleHits: 0,
+                tripleHits: 0,
+                nextHits: 0,
+                prevHits: 0,
+                outsideHits: 0,
+                otherHits: 0
+            };
+        }
+
+        const r = result[num];
+        const hits = s.hits;
+
+        r.attempts += Object.values(hits).reduce((a, b) => a + b, 0);
+        r.darts += s.darts;
+
+        r.singleHits += hits.single || 0;
+        r.doubleHits += hits.double || 0;
+        r.tripleHits += hits.triple || 0;
+        r.nextHits += hits.next || 0;
+        r.prevHits += hits.prev || 0;
+        r.outsideHits += hits.outside || 0;
+        r.otherHits += hits.other || 0;
+    });
+
+    Object.keys(result).forEach(num => {
+        const r = result[num];
+        const total = r.attempts || 1;
+
+        r["Single hit %"] = (r.singleHits / total) * 100;
+        r["Double hit %"] = (r.doubleHits / total) * 100;
+        r["Triple hit %"] = (r.tripleHits / total) * 100;
+        r["Next hit %"] = (r.nextHits / total) * 100;
+        r["Previous hit %"] = (r.prevHits / total) * 100;
+        r["Outside hit %"] = (r.outsideHits / total) * 100;
+        r["Other %"] = (r.otherHits / total) * 100;
+    });
+
+    return result;
+}
+
+let mode = "single";
+
+// --- CONFIG ---
+const R = {
+    doubleOuter: 200,
+    doubleInner: 180,
+    singleOuter: 180,
+    tripleOuter: 130,
+    tripleInner: 110,
+    singleInner: 110,
+    bullOuter: 30,
+    bullInner: 12
+};
+
+// --- COLOR ---
+function getValue(num) {
+    const d = data[num];
+    if (!d) return null;
+
+    if (mode === "dartbot") return null; // 🚨 important
+
+    if (mode === "single") return d["Single hit %"];
+    if (mode === "double") return d["Double hit %"];
+    if (mode === "triple") return d["Triple hit %"];
+
+    return null;
+}
+
+function getColor(value) {
+    if (value === null || value === undefined) return "#666";
+
+    const max = getMaxValue();
+    const ratio = value / max;
+
+    // smoother gradient
+    const green = Math.floor(255 * ratio);
+    const red = Math.floor(255 * (1 - ratio));
+
+    return `rgb(${red},${green},0)`;
+}
+
+// --- DRAW SEGMENT ---
+function drawSegment(svg, startAngle, endAngle, rOuter, rInner, color, num) {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+    const x1 = Math.cos(startAngle) * rOuter;
+    const y1 = Math.sin(startAngle) * rOuter;
+    const x2 = Math.cos(endAngle) * rOuter;
+    const y2 = Math.sin(endAngle) * rOuter;
+
+    const x3 = Math.cos(endAngle) * rInner;
+    const y3 = Math.sin(endAngle) * rInner;
+    const x4 = Math.cos(startAngle) * rInner;
+    const y4 = Math.sin(startAngle) * rInner;
+
+    const d = `
+        M ${x1} ${y1}
+        A ${rOuter} ${rOuter} 0 0 1 ${x2} ${y2}
+        L ${x3} ${y3}
+        A ${rInner} ${rInner} 0 0 0 ${x4} ${y4}
+        Z
+    `;
+
+    path.setAttribute("d", d);
+    path.setAttribute("fill", color);
+    path.setAttribute("stroke", "#111");
+    path.setAttribute("cursor", "pointer");
+    path.style.pointerEvents = "all";
+
+    path.addEventListener("click", () => showDetails(num));
+
+    svg.appendChild(path);
+}
+
+// --- DRAW BOARD --
+function getMaxValue() {
+    let max = 0;
+
+    Object.keys(data).forEach(num => {
+        const val = getValue(num);
+        if (val !== null && val !== undefined) {
+            if (val > max) max = val;
+        }
+    });
+
+    return max || 1; // avoid division by 0
+}
+
+function getDartbotColor(result) {
+    if (!result || result.thrown === 0) return "#555";
+
+    const pct = result.hitPct;
+
+    if (pct >= 60) return "#4caf50";
+    if (pct >= 30) return "#ff9800";
+    return "#f44336";
+}
+
+function drawBoard() {
+    const svg = document.getElementById("board");
+    svg.innerHTML = ""; // 🔥 IMPORTANT: clear previous render
+
+    const angleStep = 2 * Math.PI / 20;
+
+    numbers.forEach((num, i) => {
+        const offset = angleStep / 2;
+        const start = i * angleStep - Math.PI / 2 - offset;
+        const end = (i + 1) * angleStep - Math.PI / 2 - offset;
+
+        let color;
+
+        if (mode === "dartbot") {
+            console.log("Dartbot data for", num, data.dartbot?.[num]);
+            const result = data.dartbot?.[String(num)];
+            color = getDartbotColor(result);
+        } else {
+            const value = getValue(num);
+            color = getColor(value);
+        }
+
+        // FULL segment (center → double)
+        drawFullSegment(svg, start, end, R.doubleOuter, color, num);
+
+        // number label
+        const angle = (start + end) / 2;
+        const tx = Math.cos(angle) * 210;
+        const ty = Math.sin(angle) * 210;
+
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", tx);
+        text.setAttribute("y", ty);
+        text.setAttribute("fill", "white");
+        text.setAttribute("font-size", "14");
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("alignment-baseline", "middle");
+        text.textContent = num;
+
+        svg.appendChild(text);
+    });
+
+    // --- BULL (25) ---
+    let bullColor;
+
+    if (mode === "dartbot") {
+        const result = data.dartbot?.["25"];
+        bullColor = getDartbotColor(result);
+    } else {
+        const bullValue = (mode === "triple") ? null : getValue("25");
+        bullColor = (mode === "triple") ? "#666" : getColor(bullValue);
+    }
+
+    const bullOuter = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    bullOuter.setAttribute("r", R.bullOuter);
+    bullOuter.setAttribute("fill", mode === "triple" ? "#666" : bullColor);
+    bullOuter.setAttribute("stroke", "#111");
+    bullOuter.addEventListener("click", () => showDetails("25"));
+    svg.appendChild(bullOuter);
+
+    const bullInner = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    bullInner.setAttribute("r", R.bullInner);
+    bullInner.setAttribute("fill", "#aa0000");
+    bullInner.setAttribute("stroke", "#111");
+    bullInner.addEventListener("click", () => showDetails("25"));
+    svg.appendChild(bullInner);
+}
+
+function drawFullSegment(svg, startAngle, endAngle, radius, color, num) {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+    const x1 = Math.cos(startAngle) * radius;
+    const y1 = Math.sin(startAngle) * radius;
+    const x2 = Math.cos(endAngle) * radius;
+    const y2 = Math.sin(endAngle) * radius;
+
+    const d = `
+        M 0 0
+        L ${x1} ${y1}
+        A ${radius} ${radius} 0 0 1 ${x2} ${y2}
+        Z
+    `;
+
+    path.setAttribute("d", d);
+    path.setAttribute("fill", color);
+    path.setAttribute("stroke", "#111");
+
+    path.addEventListener("click", () => showDetails(num));
+
+    svg.appendChild(path);
+}
+
+// --- DETAILS ---
+function showDetails(num) {
+    const d = data[num];
+
+    let html = `<h3>Number ${num}</h3>`;
+
+    if (mode === "single") {
+        if (!d) return;
+        html += `
+            <p>Single hit: ${d["Single hit %"].toFixed(2)}%</p>
+            <p>Double hit: ${d["Double hit %"].toFixed(2)}%</p>
+            <p>Triple hit: ${d["Triple hit %"].toFixed(2)}%</p>
+            <p>Next: ${d["Next hit %"].toFixed(2)}%</p>
+            <p>Previous: ${d["Previous hit %"].toFixed(2)}%</p>
+            <p>Outside: ${d["Outside hit %"].toFixed(2)}%</p>
+        `;
+    }
+
+    if (mode === "double") {
+        if (!d) return;
+        html += `
+            <p>Double hit: ${d["Double hit %"].toFixed(2)}%</p>
+            <p>Single hit: ${d["Single hit %"].toFixed(2)}%</p>
+            <p>Outside: ${d["Outside hit %"].toFixed(2)}%</p>
+            <p>Next: ${d["Next hit %"].toFixed(2)}%</p>
+            <p>Previous: ${d["Previous hit %"].toFixed(2)}%</p>
+        `;
+    }
+
+    if (mode === "triple") {
+        if (!d) return;
+        html += `
+            <p>Triple hit: ${d["Triple hit %"].toFixed(2)}%</p>
+            <p>Number hit: ${((d.tripleHits + d.doubleHits + d.singleHits) / d.attempts * 100).toFixed(2)}%</p>
+            <p>Next: ${d["Next hit %"].toFixed(2)}%</p>
+            <p>Previous: ${d["Previous hit %"].toFixed(2)}%</p>
+        `;
+    }
+
+    if (mode === "dartbot") {
+        const dBot = data.dartbot?.[num];
+
+        if (!dBot || dBot.thrown === 0) {
+            html += `<p>No attempts for D${num}</p>`;
+        } else {
+            html += `
+                <p><strong>Thrown:</strong> ${dBot.thrown}</p>
+                <p><strong>Hits:</strong> ${dBot.hits}</p>
+                <p><strong>Hit %:</strong> ${dBot.hitPct.toFixed(2)}%</p>
+                <p><strong>Miss %:</strong> ${(100 - dBot.hitPct).toFixed(2)}%</p>
+            `;
+        }
+    }
+
+    document.getElementById("details").innerHTML = html;
+}
+
+// --- MODE ---
+function setMode(newMode) {
+    mode = newMode;
+
+    document.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+    document.getElementById(newMode + "Btn").classList.add("active");
+
+    applyFilter(); // 🔥 recompute with correct dataset
+}
+
+function setDefaultDates() {
+    const fromInput = document.getElementById("fromDate");
+    const toInput = document.getElementById("toDate");
+
+    if (!fromInput.value) fromInput.value = "2026-01-01";
+    if (!toInput.value) toInput.value = new Date().toISOString().split("T")[0];
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+    setDefaultDates();
+    loadSessions();
+});
+
+</script>
+
+</body>
+</html>
