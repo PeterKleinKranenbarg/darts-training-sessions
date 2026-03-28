@@ -238,5 +238,61 @@
     "previous_single": 2,
     "outside_hits": 1,
     "other": 1
+  },
+  {
+    "date": "2026-03-28",
+    "training_type": "triple_training",
+    "triple": 20,
+    "triple_hits": 2,
+    "double_hits": 0,
+    "single_hits": 13,
+    "next_triple": 0,
+    "previous_triple": 2,
+    "next_single": 8,
+    "previous_single": 5,
+    "sum_other": 0,
+    "other": 0
+  },
+  {
+    "date": "2026-03-28",
+    "training_type": "triple_training",
+    "triple": 19,
+    "triple_hits": 1,
+    "double_hits": 0,
+    "single_hits": 10,
+    "next_triple": 2,
+    "previous_triple": 3,
+    "next_single": 7,
+    "previous_single": 5,
+    "sum_other": 99,
+    "other": 2
+  },
+  {
+    "date": "2026-03-28",
+    "training_type": "triple_training",
+    "triple": 18,
+    "triple_hits": 3,
+    "double_hits": 3,
+    "single_hits": 16,
+    "next_triple": 0,
+    "previous_triple": 0,
+    "next_single": 3,
+    "previous_single": 1,
+    "sum_other": 47,
+    "other": 4
+  },
+  {
+    "date": "2026-03-28",
+    "training_type": "triple_training",
+    "triple": 17,
+    "triple_hits": 2,
+    "double_hits": 0,
+    "single_hits": 14,
+    "next_triple": 2,
+    "previous_triple": 1,
+    "next_single": 4,
+    "previous_single": 5,
+    "sum_other": 19,
+    "other": 2
   }
 ]
