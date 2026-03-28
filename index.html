@@ -343,24 +343,52 @@ function renderInputs() {
         `;
     }
 
-    if (type === "round-the-board") {
-        container.innerHTML = `
-            Darts up to bull: <input id="darts_up_to_bullseye" type="number"><br>
-            Darts at bull: <input id="darts_thrown_at_bullseye" type="number"><br>
-            Darts in single bull: <input id="darts_thrown_in_single_bull" type="number"><br>
-        `;
-    }
-
     if (type === "dartbot") {
         container.innerHTML = `
+            Dartbot level: <input id="dartbot_level" type="number"><br>
             3-dart average: <input id="avg" type="number"><br>
             First 9 average: <input id="first9" type="number"><br>
             Highest score: <input id="highest_score" type="number"><br>
+
             Finishes (comma separated): <input id="finishes" type="text"><br>
             Won legs darts (comma separated): <input id="won_darts" type="text"><br>
+
+            Doubles (comma separated): <input id="doubles" type="text"><br>
+
+            <div id="thrownPerDoubleContainer"></div><br>
+
             Lost legs: <input id="lost_legs" type="number"><br>
         `;
+        renderThrownPerDoubleCounters();
     }
+}
+
+function renderThrownPerDoubleCounters() {
+    const container = document.getElementById("thrownPerDoubleContainer");
+    container.innerHTML = "";
+
+    const doubles = [...Array(20).keys()].map(i => i + 1).concat([25]);
+
+    doubles.forEach(value => {
+        const wrapper = document.createElement("div");
+        wrapper.style.display = "flex";
+        wrapper.style.flexDirection = "column";
+        wrapper.style.alignItems = "center";
+
+        const label = document.createElement("label");
+        label.innerText = "D" + value;
+
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.value = "0";
+        input.id = `double_${value}`;
+        input.style.width = "60px";
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(input);
+        container.appendChild(wrapper);
+    });
 }
 
 function addTrainingToSession() {
@@ -423,11 +451,40 @@ function addTrainingToSession() {
     }
 
     if (type === "dartbot") {
+        session.dartbot_level = getVal("dartbot_level");
+
         session["3_dart_average"] = getVal("avg");
         session["first_9_average"] = getVal("first9");
         session.highest_score = getVal("highest_score");
-        session.finishes = document.getElementById("finishes").value.split(",").map(x => Number(x.trim()) || 0);
-        session.won_legs_number_of_darts = document.getElementById("won_darts").value.split(",").map(x => Number(x.trim()) || 0);
+
+        session.finishes = document
+            .getElementById("finishes")
+            .value
+            .split(",")
+            .map(x => Number(x.trim()) || 0);
+
+        session.won_legs_number_of_darts = document
+            .getElementById("won_darts")
+            .value
+            .split(",")
+            .map(x => Number(x.trim()) || 0);
+
+        session.doubles = document
+            .getElementById("doubles")
+            .value
+            .split(",")
+            .map(x => Number(x.trim()) || 0);
+
+        const thrownPerDouble = {};
+        const doubles = [...Array(20).keys()].map(i => i + 1).concat([25]);
+
+        doubles.forEach(value => {
+            const input = document.getElementById(`double_${value}`);
+            thrownPerDouble[value] = Number(input.value) || 0;
+        });
+
+        session.thrown_per_double = thrownPerDouble;
+
         session.lost_legs = getVal("lost_legs");
     }
 
