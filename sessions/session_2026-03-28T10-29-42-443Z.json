@@ -294,5 +294,49 @@
     "previous_single": 5,
     "sum_other": 19,
     "other": 2
+  },
+  {
+    "date": "2026-03-28",
+    "training_type": "dartbot",
+    "dartbot_level": 4,
+    "3_dart_average": 44.05,
+    "first_9_average": 46.33,
+    "highest_score": 97,
+    "finishes": [
+      32,
+      32
+    ],
+    "won_legs_number_of_darts": [
+      26,
+      15
+    ],
+    "doubles": [
+      8,
+      6
+    ],
+    "thrown_per_double": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 1,
+      "7": 0,
+      "8": 1,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "12": 1,
+      "13": 0,
+      "14": 0,
+      "15": 0,
+      "16": 3,
+      "17": 0,
+      "18": 0,
+      "19": 0,
+      "20": 4,
+      "25": 0
+    },
+    "lost_legs": 0
   }
 ]
