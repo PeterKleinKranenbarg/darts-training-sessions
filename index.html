@@ -167,6 +167,16 @@ let currentSession = {
     trainings: []
 };
 
+const savedSession = localStorage.getItem("currentSession");
+if (savedSession) {
+    currentSession = JSON.parse(savedSession);
+}
+renderSessionList();
+
+function persistSession() {
+    localStorage.setItem("currentSession", JSON.stringify(currentSession));
+}
+
 function addExercise(exerciseData) {
     currentSession.exercises.push(exerciseData);
 
@@ -175,6 +185,12 @@ function addExercise(exerciseData) {
 
 let rawSessions = [];
 
+function removeTraining(index) {
+    currentSession.trainings.splice(index, 1);
+    persistSession();
+    renderSessionList();
+}
+
 function renderSessionList() {
     const container = document.getElementById("sessionItems");
     container.innerHTML = "";
@@ -182,9 +198,22 @@ function renderSessionList() {
     currentSession.trainings.forEach((t, index) => {
         const div = document.createElement("div");
         div.style.borderBottom = "1px solid #555";
-        div.style.padding = "5px";
+        div.style.padding = "8px";
+        div.style.display = "flex";
+        div.style.justifyContent = "space-between";
+        div.style.alignItems = "center";
 
-        div.innerText = `${index + 1}. ${t.training_type} (${new Date(t.date).toLocaleString()})`;
+        const text = document.createElement("span");
+        text.innerText = `${index + 1}. ${t.training_type} (${new Date(t.date).toLocaleString()})`;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.innerText = "Remove";
+        removeBtn.style.marginLeft = "10px";
+
+        removeBtn.onclick = () => removeTraining(index);
+
+        div.appendChild(text);
+        div.appendChild(removeBtn);
 
         container.appendChild(div);
     });
@@ -196,7 +225,7 @@ async function createSessionPR() {
         return;
     }
 
-    const response = await fetch("http://192.168.2.6:3000/save-session", {
+    const response = await fetch("http://192.168.1.xxx:3000/save-session", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -212,8 +241,12 @@ async function createSessionPR() {
         window.open(result.pr_url, "_blank");
     }
 
-    // reset session
+    // ✅ Clear session in memory
     currentSession = { trainings: [] };
+
+    // ✅ Clear localStorage
+    localStorage.removeItem("currentSession");
+
     renderSessionList();
 }
 
@@ -394,6 +427,7 @@ function addTrainingToSession() {
 
     // ✅ Add to session
     currentSession.trainings.push(session);
+    persistSession();
 
     // ✅ Update UI list
     renderSessionList();
