@@ -1,0 +1,17 @@
+[
+  {
+    "date": "2026-03-28",
+    "training_type": "50-out",
+    "darts_used": [
+      1,
+      2
+    ]
+  },
+  {
+    "date": "2026-03-28",
+    "training_type": "round-the-board",
+    "darts_up_to_bullseye": 12,
+    "darts_thrown_at_bullseye": 1,
+    "darts_thrown_in_single_bull": 0
+  }
+]
