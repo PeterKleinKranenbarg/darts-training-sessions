@@ -167,6 +167,12 @@ let currentSession = {
     trainings: []
 };
 
+let currentTraining = {
+    type: null,
+    target: null,
+    hits: []
+};
+
 const savedSession = localStorage.getItem("currentSession");
 if (savedSession) {
     currentSession = JSON.parse(savedSession);
@@ -225,7 +231,7 @@ async function createSessionPR() {
         return;
     }
 
-    const response = await fetch("http://192.168.1.xxx:3000/save-session", {
+    const response = await fetch("http://192.168.56.1:3000/save-session", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
