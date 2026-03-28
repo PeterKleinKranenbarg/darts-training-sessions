@@ -76,77 +76,332 @@ svg {
 <body>
 <h1>Darts Accuracy Dashboard</h1>
 
-<!-- DATE FILTER (always visible) -->
-<div id="dateControls">
-    <input type="date" id="fromDate">
-    <input type="date" id="toDate">
-    <button onclick="applyFilter()">Apply</button>
-</div>
 
-<!-- MODE TOGGLE -->
+<!-- View toggle-->
 <div id="controls">
-    <button onclick="setMode('single')" id="singleBtn">Single</button>
-    <button onclick="setMode('double')" id="doubleBtn">Double</button>
-    <button onclick="setMode('triple')" id="tripleBtn">Triple</button>
-    <button onclick="setMode('dartbot')" id="dartbotBtn">Dartbot</button>
-    <p id="modeDescription"></p>
+    <button onclick="switchView('dashboard')">Dashboard</button>
+    <button onclick="switchView('training')">New Training</button>
 </div>
 
+<div id="dashboardView">
+    <h2>Dashboard</h2>
+    
+    <!-- DATE FILTER (always visible) -->
+    <div id="dateControls">
+        <input type="date" id="fromDate">
+        <input type="date" id="toDate">
+        <button onclick="applyFilter()">Apply</button>
+    </div>
 
-<!-- MAIN LAYOUT -->
-<div id="layout">
-    <svg id="board" width="500" height="500" viewBox="-250 -250 500 500"></svg>
-    <div id="details">Click a segment to see details</div>
+        
+    <!-- MODE TOGGLE -->
+    <div id="controls">
+        <button onclick="setMode('single')" id="singleBtn">Single</button>
+        <button onclick="setMode('double')" id="doubleBtn">Double</button>
+        <button onclick="setMode('triple')" id="tripleBtn">Triple</button>
+        <button onclick="setMode('dartbot')" id="dartbotBtn">Dartbot</button>
+        <p id="modeDescription"></p>
+    </div>
+
+
+    <!-- MAIN LAYOUT -->
+    <div id="layout">
+        <svg id="board" width="500" height="500" viewBox="-250 -250 500 500"></svg>
+        <div id="details">Click a segment to see details</div>
+    </div>
+
+    <!-- DARTBOT SECTION -->
+    <div id="dartbotSection">
+        <h2>Dartbot Stats</h2>
+        <p id="dartbotDescription"></p>
+        <div id="dartbotStats"></div>
+    </div>
+
+    <!-- Round the board section-->
+    <div id="roundTheBoardSection">
+        <h2>Round the Board Summary</h2>
+        <p id="roundTheBoardDescription"></p>
+        <div id="roundTheBoardStats"></div>
+    </div>
+
+    <!-- 50-OUT SECTION -->
+    <div id="summary">
+        <h2>50-Out Summary</h2>
+        <p id="fiftyOutDescription"></p>
+        <div id="fiftyOutStats"></div>
+    </div>
+
 </div>
 
-<!-- DARTBOT SECTION -->
-<div id="dartbotSection">
-    <h2>Dartbot Stats</h2>
-    <p id="dartbotDescription"></p>
-    <div id="dartbotStats"></div>
+<div id="trainingView" style="display:none;">
+    <!-- INPUT SECTION -->
+    <div id="inputSection" style="margin-top:40px; background:#333; padding:20px; border-radius:10px; display:inline-block;">
+        <h2>New Training Session</h2>
+
+        <label>Training type:</label><br>
+        <select id="trainingType">
+            <option value="single_training">Single</option>
+            <option value="double_training">Double</option>
+            <option value="triple_training">Triple</option>
+            <option value="dartbot">Dartbot</option>
+            <option value="50-out">50-Out</option>
+            <option value="round-the-board">Round the Board</option>
+        </select>
+
+        <div id="dynamicInputs" style="margin-top:15px;"></div>
+
+        <button onclick="addTrainingToSession()">Save Training</button>
+    </div>
+    <div id="sessionList" style="margin-top:20px; background:#333; padding:15px; border-radius:10px; text-align:left;">
+        <h3>Current Session</h3>
+        <div id="sessionItems"></div>
+    </div>
+    <div id="trainingPreview"></div>
+    <button onclick="createSessionPR()">Save Session (Create PR)</button>
 </div>
 
-<!-- Round the board section-->
-<div id="roundTheBoardSection">
-    <h2>Round the Board Summary</h2>
-    <p id="roundTheBoardDescription"></p>
-    <div id="roundTheBoardStats"></div>
-</div>
-
-<!-- 50-OUT SECTION -->
-<div id="summary">
-    <h2>50-Out Summary</h2>
-    <p id="fiftyOutDescription"></p>
-    <div id="fiftyOutStats"></div>
-</div>
 <script>
-
+let currentView = "dashboard"; // or "training"
 let data = {};
+let currentSession = {
+    trainings: []
+};
+
+function addExercise(exerciseData) {
+    currentSession.exercises.push(exerciseData);
+
+    renderCurrentSession();
+}
 
 let rawSessions = [];
+
+function renderSessionList() {
+    const container = document.getElementById("sessionItems");
+    container.innerHTML = "";
+
+    currentSession.trainings.forEach((t, index) => {
+        const div = document.createElement("div");
+        div.style.borderBottom = "1px solid #555";
+        div.style.padding = "5px";
+
+        div.innerText = `${index + 1}. ${t.training_type} (${new Date(t.date).toLocaleString()})`;
+
+        container.appendChild(div);
+    });
+}
+
+async function createSessionPR() {
+    if (currentSession.trainings.length === 0) {
+        alert("No trainings in session");
+        return;
+    }
+
+    const response = await fetch("http://192.168.2.6:3000/save-session", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(currentSession)
+    });
+
+    const result = await response.json();
+
+    alert("Session saved! PR created.");
+
+    if (result.pr_url) {
+        window.open(result.pr_url, "_blank");
+    }
+
+    // reset session
+    currentSession = { trainings: [] };
+    renderSessionList();
+}
+
+function renderCurrentSession() {
+    const container = document.getElementById("trainingPreview");
+    container.innerHTML = "";
+
+    currentSession.exercises.forEach((ex, index) => {
+        const div = document.createElement("div");
+        div.innerText = `Exercise ${index + 1}: ${JSON.stringify(ex)}`;
+        container.appendChild(div);
+    });
+}
+
+function switchView(view) {
+    currentView = view;
+
+    document.getElementById("dashboardView").style.display = view === "dashboard" ? "block" : "none";
+    document.getElementById("trainingView").style.display = view === "training" ? "block" : "none";
+}
 
 async function loadSessions() {
     const index = await fetch("sessions/index.json").then(r => r.json());
 
     const promises = index.map(async file => {
         const json = await fetch("sessions/" + file).then(r => r.json());
-
-        // If file contains multiple sessions
-        if (Array.isArray(json)) {
-            return json;
-        }
-
-        // If still single object (backward compatibility)
-        return [json];
+        return Array.isArray(json) ? json : [json];
     });
 
     const nested = await Promise.all(promises);
 
-    // Flatten into one array
-    rawSessions = nested.flat();
+    // 🔥 merge everything
+    rawSessions = [...nested.flat()];
 
-    applyFilter(); // 🔥 important
+    applyFilter();
 }
+
+document.getElementById("trainingType").addEventListener("change", renderInputs);
+
+function renderInputs() {
+    const type = document.getElementById("trainingType").value;
+    const container = document.getElementById("dynamicInputs");
+
+    if (type === "single_training") {
+        container.innerHTML = `
+            Target number: <input id="single" type="number"><br>
+            Single hits: <input id="single_hits" type="number"><br>
+            Double hits: <input id="double_hits" type="number"><br>
+            Triple hits: <input id="triple_hits" type="number"><br>
+            Next hits: <input id="next_single" type="number"><br>
+            Previous hits: <input id="previous_single" type="number"><br>
+            Outside: <input id="outside_hits" type="number"><br>
+            Other: <input id="other" type="number"><br>
+        `;
+    }
+
+    if (type === "double_training") {
+        container.innerHTML = `
+            Target number: <input id="double" type="number"><br>
+            Double hits: <input id="double_hits" type="number"><br>
+            Single hits: <input id="single_hits" type="number"><br>
+            Next doubles: <input id="next_double" type="number"><br>
+            Previous doubles: <input id="previous_double" type="number"><br>
+            Outside: <input id="outside_hits" type="number"><br>
+            Other: <input id="other" type="number"><br>
+        `;
+    }
+
+    if (type === "triple_training") {
+        container.innerHTML = `
+            Target number: <input id="triple" type="number"><br>
+            Triple hits: <input id="triple_hits" type="number"><br>
+            Double hits: <input id="double_hits" type="number"><br>
+            Single hits: <input id="single_hits" type="number"><br>
+            Next triple: <input id="next_triple" type="number"><br>
+            Previous triple: <input id="previous_triple" type="number"><br>
+            Next single: <input id="next_single" type="number"><br>
+            Previous single: <input id="previous_single" type="number"><br>
+            Other score total: <input id="sum_other" type="number"><br>
+            Other hits: <input id="other" type="number"><br>
+        `;
+    }
+
+    if (type === "50-out") {
+        container.innerHTML = `
+            Darts used (comma separated, 0 = fail):<br>
+            <input id="darts_used" type="text" placeholder="3,4,5,0">
+        `;
+    }
+
+    if (type === "round-the-board") {
+        container.innerHTML = `
+            Darts up to bull: <input id="darts_up_to_bullseye" type="number"><br>
+            Darts at bull: <input id="darts_thrown_at_bullseye" type="number"><br>
+            Darts in single bull: <input id="darts_thrown_in_single_bull" type="number"><br>
+        `;
+    }
+
+    if (type === "dartbot") {
+        container.innerHTML = `
+            3-dart average: <input id="avg" type="number"><br>
+            First 9 average: <input id="first9" type="number"><br>
+            Highest score: <input id="highest_score" type="number"><br>
+            Finishes (comma separated): <input id="finishes" type="text"><br>
+            Won legs darts (comma separated): <input id="won_darts" type="text"><br>
+            Lost legs: <input id="lost_legs" type="number"><br>
+        `;
+    }
+}
+
+function addTrainingToSession() {
+    const type = document.getElementById("trainingType").value;
+
+    let session = {
+        date: new Date().toISOString().split("T")[0],
+        training_type: type
+    };
+
+    const getVal = id => {
+        const el = document.getElementById(id);
+        return el ? Number(el.value) || 0 : 0;
+    };
+
+    if (type === "single_training") {
+        session.single = getVal("single");
+        session.single_hits = getVal("single_hits");
+        session.double_hits = getVal("double_hits");
+        session.triple_hits = getVal("triple_hits");
+        session.next_single = getVal("next_single");
+        session.previous_single = getVal("previous_single");
+        session.outside_hits = getVal("outside_hits");
+        session.other = getVal("other");
+    }
+
+    if (type === "double_training") {
+        session.double = getVal("double");
+        session.double_hits = getVal("double_hits");
+        session.single_hits = getVal("single_hits");
+        session.next_double = getVal("next_double");
+        session.previous_double = getVal("previous_double");
+        session.outside_hits = getVal("outside_hits");
+        session.other = getVal("other");
+    }
+
+    if (type === "triple_training") {
+        session.triple = getVal("triple");
+        session.triple_hits = getVal("triple_hits");
+        session.double_hits = getVal("double_hits");
+        session.single_hits = getVal("single_hits");
+        session.next_triple = getVal("next_triple");
+        session.previous_triple = getVal("previous_triple");
+        session.next_single = getVal("next_single");
+        session.previous_single = getVal("previous_single");
+        session.sum_other = getVal("sum_other");
+        session.other = getVal("other");
+    }
+
+    if (type === "50-out") {
+        session.darts_used = document.getElementById("darts_used").value
+            .split(",")
+            .map(x => Number(x.trim()) || 0);
+    }
+
+    if (type === "round-the-board") {
+        session.darts_up_to_bullseye = getVal("darts_up_to_bullseye");
+        session.darts_thrown_at_bullseye = getVal("darts_thrown_at_bullseye");
+        session.darts_thrown_in_single_bull = getVal("darts_thrown_in_single_bull");
+    }
+
+    if (type === "dartbot") {
+        session["3_dart_average"] = getVal("avg");
+        session["first_9_average"] = getVal("first9");
+        session.highest_score = getVal("highest_score");
+        session.finishes = document.getElementById("finishes").value.split(",").map(x => Number(x.trim()) || 0);
+        session.won_legs_number_of_darts = document.getElementById("won_darts").value.split(",").map(x => Number(x.trim()) || 0);
+        session.lost_legs = getVal("lost_legs");
+    }
+
+    // ✅ Add to session
+    currentSession.trainings.push(session);
+
+    // ✅ Update UI list
+    renderSessionList();
+
+    // Optional: clear inputs
+    document.querySelectorAll("#dynamicInputs input").forEach(input => input.value = "");
+}
+
 function applyFilter() {
     const fromInput = document.getElementById("fromDate");
     const toInput = document.getElementById("toDate");
@@ -994,6 +1249,7 @@ function updateSectionDescriptions() {
 
 window.addEventListener("DOMContentLoaded", () => {
     setDefaultDates();
+    renderInputs();
     loadSessions();
 });
 

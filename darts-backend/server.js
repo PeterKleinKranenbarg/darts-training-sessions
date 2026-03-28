@@ -15,8 +15,13 @@ const {
     REPO_NAME
 } = process.env;
 
+function getTimestamp() {
+    const now = new Date();
+    return now.toISOString().replace(/[:.]/g, "-");
+}
 const BASE = "https://api.github.com";
-const FILE_PATH = "sessions/sessions_auto.json";
+const timestamp = getTimestamp();
+const FILE_PATH = `sessions/session_${timestamp}.json`;
 const BASE_BRANCH = "main";
 
 // helper
@@ -31,25 +36,37 @@ async function github(url, options = {}) {
     });
 }
 
+
 app.post("/save-session", async (req, res) => {
     try {
         const newSession = req.body;
 
         // 🔹 1. Get latest commit SHA of main
         const refRes = await github(`/repos/${REPO_OWNER}/${REPO_NAME}/git/ref/heads/${BASE_BRANCH}`);
+
+        if (!refRes.ok) {
+            const err = await refRes.text();
+            throw new Error("Failed to get base ref: " + err);
+        }
+
         const refData = await refRes.json();
         const baseSha = refData.object.sha;
 
         // 🔹 2. Create new branch
         const branchName = `session-${Date.now()}`;
 
-        await github(`/repos/${REPO_OWNER}/${REPO_NAME}/git/refs`, {
+        const branchRes = await github(`/repos/${REPO_OWNER}/${REPO_NAME}/git/refs`, {
             method: "POST",
             body: JSON.stringify({
                 ref: `refs/heads/${branchName}`,
                 sha: baseSha
             })
         });
+
+        if (!branchRes.ok) {
+            const err = await branchRes.text();
+            throw new Error("Failed to create branch: " + err);
+        }
 
         // 🔹 3. Get current file content
         const fileRes = await github(
@@ -68,39 +85,57 @@ app.post("/save-session", async (req, res) => {
         }
 
         // 🔹 4. Append new session
-        content.push(newSession);
+        content.push(...newSession.trainings);
 
         const updatedContent = Buffer.from(
             JSON.stringify(content, null, 2)
         ).toString("base64");
 
         // 🔹 5. Commit file to new branch
-        await github(`/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+        const body = {
+            message: `Add darts session (${branchName})`,
+            content: updatedContent,
+            branch: branchName
+        };
+
+        if (sha) {
+            body.sha = sha; // only include if file exists
+        }
+
+        const commitRes = await github(`/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
             method: "PUT",
-            body: JSON.stringify({
-                message: `Add darts session (${branchName})`,
-                content: updatedContent,
-                sha: sha,
-                branch: branchName
-            })
+            body: JSON.stringify(body)
         });
 
+        if (!commitRes.ok) {
+            const err = await commitRes.text();
+            throw new Error("Failed to commit file: " + err);
+        }
+
         // 🔹 6. Create Pull Request
+        const timestamp = getTimestamp();
+        const prTitle = `Darts session - ${timestamp}`;
         const prRes = await github(`/repos/${REPO_OWNER}/${REPO_NAME}/pulls`, {
             method: "POST",
             body: JSON.stringify({
-                title: "New darts session",
+                title: prTitle,
                 head: branchName,
                 base: BASE_BRANCH,
                 body: "Automatically created session from darts app 🎯"
             })
         });
 
+        if (!prRes.ok) {
+            const err = await prRes.text();
+            throw new Error("Failed to create PR: " + err);
+        }
+
         const prData = await prRes.json();
 
         res.json({
             success: true,
-            pr_url: prData.html_url
+            pr_url: prData.html_url,
+            branch: branchName
         });
 
     } catch (err) {
@@ -109,8 +144,13 @@ app.post("/save-session", async (req, res) => {
     }
 });
 
+
+app.get("/", (req, res) => {
+    res.send("Darts backend is running 🎯");
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log("Server running on port " + PORT);
+    console.log("Server running on http://localhost:" + PORT);
 });
