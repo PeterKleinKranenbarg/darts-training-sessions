@@ -1,0 +1,18 @@
+{
+  "name": "darts-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "node-fetch": "^3.3.2"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
