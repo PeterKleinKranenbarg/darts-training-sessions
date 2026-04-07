@@ -1,0 +1,249 @@
+[
+  {
+    "date": "2026-04-07",
+    "training_type": "triple_training",
+    "triple": 20,
+    "triple_hits": 1,
+    "double_hits": 0,
+    "single_hits": 14,
+    "next_triple": 1,
+    "previous_triple": 0,
+    "next_single": 10,
+    "previous_single": 2,
+    "sum_other": 18,
+    "other": 1
+  },
+  {
+    "date": "2026-04-07",
+    "training_type": "50-out",
+    "darts_used": [
+      0,
+      7,
+      3,
+      0,
+      0,
+      0,
+      0,
+      4,
+      0,
+      0
+    ]
+  },
+  {
+    "date": "2026-04-07",
+    "training_type": "dartbot",
+    "dartbot_level": 4,
+    "3_dart_average": 38.07,
+    "first_9_average": 44,
+    "highest_score": 90,
+    "finishes": [
+      65
+    ],
+    "won_legs_number_of_darts": [
+      14
+    ],
+    "doubles": [
+      20
+    ],
+    "thrown_per_double": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 1,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 1,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 0,
+      "16": 2,
+      "17": 0,
+      "18": 0,
+      "19": 0,
+      "20": 1,
+      "25": 0
+    },
+    "lost_legs": 2
+  },
+  {
+    "date": "2026-04-07",
+    "training_type": "dartbot",
+    "dartbot_level": 4,
+    "3_dart_average": 44.02,
+    "first_9_average": 54.44,
+    "highest_score": 95,
+    "finishes": [
+      47,
+      16
+    ],
+    "won_legs_number_of_darts": [
+      17,
+      17
+    ],
+    "doubles": [
+      16,
+      4
+    ],
+    "thrown_per_double": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 3,
+      "5": 1,
+      "6": 0,
+      "7": 0,
+      "8": 2,
+      "9": 0,
+      "10": 6,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 1,
+      "16": 2,
+      "17": 0,
+      "18": 0,
+      "19": 0,
+      "20": 3,
+      "25": 0
+    },
+    "lost_legs": 0
+  },
+  {
+    "date": "2026-04-07",
+    "training_type": "dartbot",
+    "dartbot_level": 4,
+    "3_dart_average": 40.13,
+    "first_9_average": 37.67,
+    "highest_score": 79,
+    "finishes": [
+      24,
+      38
+    ],
+    "won_legs_number_of_darts": [
+      21,
+      24
+    ],
+    "doubles": [
+      6,
+      19
+    ],
+    "thrown_per_double": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 2,
+      "7": 0,
+      "8": 0,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "12": 1,
+      "13": 0,
+      "14": 0,
+      "15": 0,
+      "16": 2,
+      "17": 0,
+      "18": 0,
+      "19": 3,
+      "20": 2,
+      "25": 1
+    },
+    "lost_legs": 0
+  },
+  {
+    "date": "2026-04-07",
+    "training_type": "dartbot",
+    "dartbot_level": 4,
+    "3_dart_average": 45.15,
+    "first_9_average": 33.17,
+    "highest_score": 100,
+    "finishes": [
+      40,
+      30
+    ],
+    "won_legs_number_of_darts": [
+      19,
+      21
+    ],
+    "doubles": [
+      20,
+      15
+    ],
+    "thrown_per_double": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 3,
+      "16": 0,
+      "17": 0,
+      "18": 0,
+      "19": 0,
+      "20": 2,
+      "25": 1
+    },
+    "lost_legs": 0
+  },
+  {
+    "date": "2026-04-07",
+    "training_type": "dartbot",
+    "dartbot_level": 4,
+    "3_dart_average": 40.98,
+    "first_9_average": 62,
+    "highest_score": 125,
+    "finishes": [
+      19,
+      16
+    ],
+    "won_legs_number_of_darts": [
+      17,
+      18
+    ],
+    "doubles": [
+      8,
+      4
+    ],
+    "thrown_per_double": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 1,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 5,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 1,
+      "16": 1,
+      "17": 0,
+      "18": 0,
+      "19": 1,
+      "20": 1,
+      "25": 0
+    },
+    "lost_legs": 1
+  }
+]
