@@ -124,5 +124,142 @@
       "25": 0
     },
     "lost_legs": 2
+  },
+  {
+    "date": "2026-04-08",
+    "training_type": "triple_training",
+    "triple": 20,
+    "triple_hits": 2,
+    "double_hits": 0,
+    "single_hits": 10,
+    "next_triple": 0,
+    "previous_triple": 1,
+    "next_single": 8,
+    "previous_single": 6,
+    "sum_other": 94,
+    "other": 6
+  },
+  {
+    "date": "2026-04-08",
+    "training_type": "dartbot",
+    "dartbot_level": 4,
+    "3_dart_average": 38.96,
+    "first_9_average": 52.89,
+    "highest_score": 78,
+    "finishes": [
+      39
+    ],
+    "won_legs_number_of_darts": [
+      20
+    ],
+    "doubles": [
+      11
+    ],
+    "thrown_per_double": {
+      "1": 1,
+      "2": 2,
+      "3": 3,
+      "4": 0,
+      "5": 0,
+      "6": 1,
+      "7": 0,
+      "8": 1,
+      "9": 0,
+      "10": 0,
+      "11": 1,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 0,
+      "16": 0,
+      "17": 0,
+      "18": 0,
+      "19": 0,
+      "20": 2,
+      "25": 1
+    },
+    "lost_legs": 2
+  },
+  {
+    "date": "2026-04-08",
+    "training_type": "dartbot",
+    "dartbot_level": 4,
+    "3_dart_average": 37.33,
+    "first_9_average": 45,
+    "highest_score": 95,
+    "finishes": [
+      20
+    ],
+    "won_legs_number_of_darts": [
+      21
+    ],
+    "doubles": [
+      10
+    ],
+    "thrown_per_double": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 1,
+      "9": 0,
+      "10": 5,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 0,
+      "16": 3,
+      "17": 0,
+      "18": 0,
+      "19": 0,
+      "20": 2,
+      "25": 0
+    },
+    "lost_legs": 2
+  },
+  {
+    "date": "2026-04-08",
+    "training_type": "dartbot",
+    "dartbot_level": 4,
+    "3_dart_average": 34.22,
+    "first_9_average": 39.78,
+    "highest_score": 81,
+    "finishes": [
+      30
+    ],
+    "won_legs_number_of_darts": [
+      25
+    ],
+    "doubles": [
+      15
+    ],
+    "thrown_per_double": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 1,
+      "8": 0,
+      "9": 0,
+      "10": 1,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 7,
+      "16": 2,
+      "17": 0,
+      "18": 0,
+      "19": 0,
+      "20": 2,
+      "25": 1
+    },
+    "lost_legs": 2
   }
 ]
