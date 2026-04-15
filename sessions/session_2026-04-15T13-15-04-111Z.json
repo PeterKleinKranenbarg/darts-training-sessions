@@ -1,0 +1,139 @@
+[
+  {
+    "date": "2026-04-15",
+    "training_type": "triple_training",
+    "triple": 20,
+    "triple_hits": 3,
+    "double_hits": 0,
+    "single_hits": 14,
+    "next_triple": 0,
+    "previous_triple": 0,
+    "next_single": 7,
+    "previous_single": 3,
+    "sum_other": 60,
+    "other": 6
+  },
+  {
+    "date": "2026-04-15",
+    "training_type": "triple_training",
+    "triple": 19,
+    "triple_hits": 3,
+    "double_hits": 0,
+    "single_hits": 18,
+    "next_triple": 0,
+    "previous_triple": 0,
+    "next_single": 6,
+    "previous_single": 5,
+    "sum_other": 70,
+    "other": 4
+  },
+  {
+    "date": "2026-04-15",
+    "training_type": "50-out",
+    "darts_used": [
+      0,
+      0,
+      0,
+      5,
+      7,
+      0,
+      5,
+      0,
+      1,
+      0,
+      7,
+      4,
+      0,
+      0,
+      4
+    ]
+  },
+  {
+    "date": "2026-04-15",
+    "training_type": "dartbot",
+    "dartbot_level": 4,
+    "3_dart_average": 38.49,
+    "first_9_average": 61.78,
+    "highest_score": 100,
+    "finishes": [
+      40,
+      35
+    ],
+    "won_legs_number_of_darts": [
+      17,
+      26
+    ],
+    "doubles": [
+      19,
+      16
+    ],
+    "thrown_per_double": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 3,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 0,
+      "16": 2,
+      "17": 0,
+      "18": 0,
+      "19": 1,
+      "20": 4,
+      "25": 0
+    },
+    "lost_legs": 1
+  },
+  {
+    "date": "2026-04-15",
+    "training_type": "dartbot",
+    "dartbot_level": 4,
+    "3_dart_average": 35.31,
+    "first_9_average": 38.22,
+    "highest_score": 132,
+    "finishes": [
+      8,
+      16
+    ],
+    "won_legs_number_of_darts": [
+      23,
+      27
+    ],
+    "doubles": [
+      2,
+      4
+    ],
+    "thrown_per_double": {
+      "1": 0,
+      "2": 2,
+      "3": 0,
+      "4": 2,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 11,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 0,
+      "16": 5,
+      "17": 0,
+      "18": 0,
+      "19": 0,
+      "20": 0,
+      "25": 0
+    },
+    "lost_legs": 1
+  }
+]
