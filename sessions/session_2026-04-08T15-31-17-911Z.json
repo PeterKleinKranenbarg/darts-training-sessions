@@ -50,15 +50,9 @@
     "3_dart_average": 34.82,
     "first_9_average": 39.83,
     "highest_score": 86,
-    "finishes": [
-      0
-    ],
-    "won_legs_number_of_darts": [
-      0
-    ],
-    "doubles": [
-      0
-    ],
+    "finishes": [],
+    "won_legs_number_of_darts": [],
+    "doubles": [],
     "thrown_per_double": {
       "1": 2,
       "2": 2,
@@ -91,15 +85,9 @@
     "3_dart_average": 33,
     "first_9_average": 46.83,
     "highest_score": 92,
-    "finishes": [
-      0
-    ],
-    "won_legs_number_of_darts": [
-      0
-    ],
-    "doubles": [
-      0
-    ],
+    "finishes": [],
+    "won_legs_number_of_darts": [],
+    "doubles": [],
     "thrown_per_double": {
       "1": 0,
       "2": 0,

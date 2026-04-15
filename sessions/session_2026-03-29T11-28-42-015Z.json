@@ -162,15 +162,9 @@
     "3_dart_average": 34.12,
     "first_9_average": 30.83,
     "highest_score": 108,
-    "finishes": [
-      0
-    ],
-    "won_legs_number_of_darts": [
-      0
-    ],
-    "doubles": [
-      0
-    ],
+    "finishes": [],
+    "won_legs_number_of_darts": [],
+    "doubles": [],
     "thrown_per_double": {
       "1": 0,
       "2": 0,
